@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionModel>
+    <Extension path = "/MonoDevelop/Ide/Commands/File">
+        <Command id = "TemplateExporter.ExportTemplateCommands.ExportTemplate"
+             _label = "Export Template"
+             defaultHandler = "TemplateExporter.ExportTemplateHandler" />
+    </Extension>
+
+    <Extension path = "/MonoDevelop/Ide/MainMenu/File">
+        <CommandItem id="TemplateExporter.ExportTemplateCommands.ExportTemplate" />
+    </Extension>
+
+</ExtensionModel>
