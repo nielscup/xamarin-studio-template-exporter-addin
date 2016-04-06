@@ -32,7 +32,6 @@
     <Compile Include="Properties\AddinInfo.cs" />
     <Compile Include="ExportTemplateHandler.cs" />
     <Compile Include="ExportTemplateCommands.cs" />
-    <Compile Include="Constants.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Manifest.addin.xml" />
@@ -41,5 +40,11 @@
   <Import Project="..\packages\MonoDevelop.Addins.0.2.3\build\net40\MonoDevelop.Addins.targets" Condition="Exists('..\packages\MonoDevelop.Addins.0.2.3\build\net40\MonoDevelop.Addins.targets')" />
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Xml\Xpt.xml" />
+    <None Include="Xml\AddIn.xml" />
+    <None Include="Xml\Project.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Xml\" />
   </ItemGroup>
 </Project>

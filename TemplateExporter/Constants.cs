@@ -36,8 +36,7 @@ namespace TemplateExporter
 			"</Category>\n\t" +
 			"</Extension>\n" +
 			"</Addin>";
-		//"\t\n\t<Runtime>\n\t\t<Import file=\"ProjectTemplate.xpt.xml\" />\n\t\t<Import file = \"Assets/AboutAssets.txt\" />\n\t\t<Import file = \"Resources/AboutResources.txt\" />\n\t\t<Import file = \"MainActivity.cs\" />\n\t\t<Import file = \"Properties/AssemblyInfo.cs\" />\n\t\t<Import file = \"Resources/drawable/Icon.png\" />\t\t\n\t\t<Import file = \"Resources/layout/Main.axml\" />\n\t\t<Import file = \"Resources/Resource.Designer.cs\" />\n\t\t<Import file = \"Resources/values/Strings.xml\" />\n\t</Runtime>\n"
-
+		
 		public const string XptXmlAndroid = 
 			"<?xml version=\"1.0\"?>\n" +
 			"<Template>\n\t" +
@@ -50,13 +49,13 @@ namespace TemplateExporter
 			"<_Description>Creates an empty MyCompany Android Application.</_Description>\n\t" +
 			"</TemplateConfiguration>\n\t\n\t" +
 			"<Actions>\n\t\t" +
-			"<Open filename = \"MainActivity.cs\"/>\n\t" +
+			"<Open filename=\"MainActivity.cs\"/>\n\t" +
 			"</Actions>\n\t\n\t" +
-			"<Combine name = \"${ProjectName}\" directory = \".\">\n\t\t" +
+			"<Combine name=\"${ProjectName}\" directory=\".\">\n\t\t" +
 			"<Options>\n\t\t\t" +
 			"<StartupProject>${ProjectName}</StartupProject>\n\t\t" +
 			"</Options>\n\t\t\n\t\t" +
-			"<Project name = \"${ProjectName}\" directory = \".\" type = \"MonoDroid\">\n\t\t\t" +
+			"<Project name=\"${ProjectName}\" directory=\".\" type=\"MonoDroid\">\n\t\t\t" +
 			"<Options\n\t\t\t\tAndroidApplication=\"true\"\n\t\t\t\tAndroidResgenFile=\"Resources/Resource.designer.cs\"\n\t\t\t\tAndroidResgenClass=\"Resource\" />\n\t\t\t" +
 			"<References>\n\t\t\t\t" +
 			"<Reference type=\"Gac\" refto=\"System, Version=2.0.5.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\" />\n\t\t\t\t" +
@@ -71,8 +70,7 @@ namespace TemplateExporter
 			"</Project>\n\t" +
 			"</Combine>\n" +
 			"</Template>";
-		//"\n\t\t\t<Files>\n\t\t\t\t<File name=\"MainActivity.cs\" src=\"[PROJECTNAME]/MainActivity.cs\" />\n\t\t\t\t<Directory name=\"Resources\">\n\t\t\t\t\t<File name=\"Resource.Designer.cs\" src=\"Resources/Resource.Designer.cs\" />\n\t\t\t\t\t<RawFile name=\"AboutResources.txt\" src=\"Resources/AboutResources.txt\" />\n\t\t\t\t\t<Directory name=\"layout\">\n\t\t\t\t\t\t<File name=\"Main.axml\" src=\"Resources/layout/Main.axml\" />\n\t\t\t\t\t</Directory>\n\t\t\t\t\t<Directory name=\"values\">\n\t\t\t\t\t\t<File name=\"Strings.xml\" src=\"Resources/values/Strings.xml\"/>\n\t\t\t\t\t</Directory>\n\t\t\t\t\t<Directory name =\"drawable\">\n\t\t\t\t\t\t<RawFile name=\"Icon.png\" src=\"Resources/drawable/Icon.png\" />\n\t\t\t\t\t</Directory>\n\t\t\t\t</Directory>\n\t\t\t\t<Directory name=\"Properties\">\n\t\t\t\t\t<File name=\"AssemblyInfo.cs\" src=\"Properties/AssemblyInfo.cs\" />\n\t\t\t\t</Directory>\n\t\t\t\t<Directory name=\"Assets\">\n\t\t\t\t\t<RawFile name=\"AboutAssets.txt\" src=\"Assets/AboutAssets.txt\" BuildAction=\"None\" />\n\t\t\t\t</Directory>\n\t\t\t</Files>"
-
+		
 	}
 }
 

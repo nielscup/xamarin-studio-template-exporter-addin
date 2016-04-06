@@ -36,9 +36,11 @@ namespace TemplateExporter
 				Directory.CreateDirectory (templateDir);
 
 				files = proj.Files;
-				StringBuilder runtimeXml = new StringBuilder("\t\n\t<Runtime>\n\t\t<Import file=\"ProjectTemplate.xpt.xml\" />");
-				StringBuilder filesXml = new StringBuilder("\n\t\t\t<Files>");
+				StringBuilder runtimeXml = new StringBuilder(); //new StringBuilder("\t\n\t<Runtime>\n\t\t<Import file=\"ProjectTemplate.xpt.xml\" />");
+				StringBuilder filesXml = new StringBuilder(); //new StringBuilder("\n\t\t\t<Files>");
 				string packages = "";
+
+				runtimeXml.Append("<Import file=\"ProjectTemplate.xpt.xml\" />");
 
 				int i = -1;
 				foreach (var file in files) 
@@ -86,30 +88,35 @@ namespace TemplateExporter
 					AppendFile(ref filesXml, file);
 				}
 
-				runtimeXml.Append("\n\t</Runtime>");
-				filesXml.Append("\n\t\t\t</Files>");
-
 				// Set template xml file paths
 				var xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
 				var addinFile = Path.Combine(rootDir, proj.Name + ".addin.xml");
 
-				// Creates the template files if not exists
-				CreateProjectFile (xptFile, Constants.XptXmlAndroid);
-				CreateProjectFile (addinFile, Constants.AddInXmlDroid);
+				// Get templated xml
+				var exporterDir = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
+				var xptTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "Xpt.xml"));
+				var addInTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "AddIn.xml"));
 
-				// get xml from template files
+				// Creates the template files if not exists for target project
+				CreateProjectFile (xptFile, xptTemplateXml);
+				CreateProjectFile (addinFile, addInTemplateXml);
+
+				// Get xml from template files
 				var xptXml = File.ReadAllText(xptFile);
 				var addInXml = File.ReadAllText(addinFile);
-				addInXml = addInXml.Replace("[PROJECTNAME]", proj.Name);
 
 				var version = GetVersion(addInXml);
-				xptXml = xptXml.Replace("[VERSION]", string.Format ("v{0}", version));
-				xptXml = xptXml.Replace("[FILES_PLACEHOLDER]", filesXml.ToString());
-				xptXml = xptXml.Replace("[PACKAGES_PLACEHOLDER]", packages);
 
-				//write template files
+				// Replace placeholders
+				addInXml = addInXml.Replace("[PROJECTNAME]", proj.Name);
+				addInXml = addInXml.Replace("[RUNTIME]", runtimeXml.ToString());
+				xptXml = xptXml.Replace("[VERSION]", string.Format ("v{0}", version));
+				xptXml = xptXml.Replace("[FILES]", filesXml.ToString());
+				xptXml = xptXml.Replace("[PACKAGES]", packages);
+
+				// Write template files
 				File.WriteAllText (xptFile.Replace(rootDir, Path.Combine(rootDir, projectTemplate)), xptXml);				
-				File.WriteAllText (addinFile.Replace(rootDir, Path.Combine(rootDir, projectTemplate)), addInXml.Replace("[RUNTIME_PLACEHOLDER]", runtimeXml.ToString()));
+				File.WriteAllText (addinFile.Replace(rootDir, Path.Combine(rootDir, projectTemplate)), addInXml);
 
 				// create .mpack
 				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", proj.Name)))
@@ -138,7 +145,7 @@ namespace TemplateExporter
 		}
 
 		protected override void Update (CommandInfo info)
-		{
+		{			
 			proj = IdeApp.ProjectOperations.CurrentSelectedProject;		
 			info.Enabled = proj != null;
 		}

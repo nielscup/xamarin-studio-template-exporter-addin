@@ -1,0 +1,37 @@
+﻿<Addin name="Empty MyCompany Android App"
+		id="[PROJECTNAME]"
+		namespace="MonoDevelop"
+		author="Niels Cup"
+		copyright="MIT"
+		url="https://github.com/nielscup"
+		description="Empty MyCompany Android App"
+		category="IDE extensions"
+		version="0.1">
+	<Runtime>
+		[RUNTIME]
+	</Runtime>
+	<Dependencies>
+		<Addin id="Core" version="5.0"/>
+		<Addin id="Ide" version="5.0"/>
+	</Dependencies>
+	
+	<Extension path="/MonoDevelop/Ide/ProjectTemplates">
+		<ProjectTemplate id="MyCompanyTemplateDroid-Project" file="ProjectTemplate.xpt.xml" />
+	</Extension>
+
+	<!---<Extension path="/MonoDevelop/Ide/ProjectTemplatePackageRepositories">
+		<PackageRepository url="https://cupitcontent.blob.core.windows.net/nuget"/>
+	</Extension>-->
+
+	<Extension path="/MonoDevelop/Ide/ProjectTemplatePackageRepositories">
+		<PackageRepository path="../../../../../../Documents/nuget_packages"/>
+	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/ProjectTemplateCategories">
+		<Category id="MyCompany" name="MyCompany" icon="md-platform-cross-platform" insertafter="other">
+			<Category id="android" name="Android">
+				<Category id="general" name="General" />
+			</Category>
+		</Category>
+	</Extension>
+</Addin>
