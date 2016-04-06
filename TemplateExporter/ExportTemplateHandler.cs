@@ -76,7 +76,7 @@ namespace TemplateExporter
 					StringBuilder references = new StringBuilder();
 
 					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)proj).References) {
-						if(reference.ReferenceType == ReferenceType.Gac)
+						if(reference.ReferenceType != ReferenceType.Assembly)
 							references.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference));							
 					}
 
