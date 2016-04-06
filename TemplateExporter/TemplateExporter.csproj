@@ -42,7 +42,8 @@
     <None Include="packages.config" />
     <None Include="Xml\Xpt.xml" />
     <None Include="Xml\AddIn.xml" />
-    <None Include="Xml\Project.xml" />
+    <None Include="Xml\ProjectAndroid.xml" />
+    <None Include="Xml\ProjectPcl.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Xml\" />

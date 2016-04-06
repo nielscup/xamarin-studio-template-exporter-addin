@@ -41,12 +41,18 @@ namespace TemplateExporter
 					switch (project.GetType().FullName) {
 						case "MonoDevelop.MonoDroid.MonoDroidProject":
 							proj = (Project)project;
-							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "Project.xml")));
+							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
 							break;
+//						case "MonoDevelop.Projects.PortableDotNetProject":
+//							proj = (Project)project;
+//							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
+//							break;
 						default:
 							continue;
 							break;
 					}
+
+
 
 					var files = proj.Files;
 
@@ -67,6 +73,12 @@ namespace TemplateExporter
 					StringBuilder filesXml = new StringBuilder();
 
 					string packages = "";
+					StringBuilder references = new StringBuilder();
+
+					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)proj).References) {
+						if(reference.ReferenceType == ReferenceType.Gac)
+							references.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference));							
+					}
 
 					//filesXml.Append(string.Format("\n\t\t\t<Directory name=\"{0}\">", proj.Name));
 					runtimeXml.Append("<Import file=\"ProjectTemplate.xpt.xml\" />");
@@ -122,6 +134,7 @@ namespace TemplateExporter
 					projectsXml = projectsXml.Replace("[FILES]", filesXml.ToString());
 					projectsXml = projectsXml.Replace("[PACKAGES]", packages);
 					projectsXml = projectsXml.Replace("[DIRECTORY]", proj.Name);
+					projectsXml = projectsXml.Replace("[REFERENCES]", references.ToString());
 				}
 
 				// Set template xml file paths
