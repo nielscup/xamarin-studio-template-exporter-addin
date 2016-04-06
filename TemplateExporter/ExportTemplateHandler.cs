@@ -9,7 +9,6 @@ using System.IO;
 using System.Diagnostics;
 using System.Xml;
 
-
 namespace TemplateExporter
 {
 	class ExportTemplateHandler:CommandHandler
@@ -101,6 +100,7 @@ namespace TemplateExporter
 				// get xml from template files
 				var xptXml = File.ReadAllText(xptFile);
 				var addInXml = File.ReadAllText(addinFile);
+				addInXml = addInXml.Replace("[PROJECTNAME]", proj.Name);
 
 				var version = GetVersion(addInXml);
 				xptXml = xptXml.Replace("[VERSION]", string.Format ("v{0}", version));
@@ -112,14 +112,14 @@ namespace TemplateExporter
 				File.WriteAllText (addinFile.Replace(rootDir, Path.Combine(rootDir, projectTemplate)), addInXml.Replace("[RUNTIME_PLACEHOLDER]", runtimeXml.ToString()));
 
 				// create .mpack
-				if(!RunMDTool(templateDir, "-v setup pack Randstad.Template.Droid.addin.xml"))
+				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", proj.Name)))
 				{
 					Console.WriteLine("Export Template ERROR: Unable to generate .mpack");
 					return;
 				}
 
-				var mpack = string.Format("MonoDevelop.Randstad.Template.Droid_{0}.mpack", version);
-				File.Move(Path.Combine(templateDir, mpack), Path.Combine(rootDir, mpack));
+				var mpack = string.Format("MonoDevelop.{0}_{1}.mpack", proj.Name, version);
+				File.Copy(Path.Combine(templateDir, mpack), Path.Combine(rootDir, mpack), true);
 
 				// install .mpack: INSTALL NOT WORKING...
 //				if(!RunMDTool(rootDir, string.Format("-v setup install -y {0}", mpack)))
