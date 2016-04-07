@@ -280,10 +280,29 @@ namespace TemplateExporter
 		private void CreateProjectFile(string path, string content, bool overwriteIfExists = false)
 		{
 			if(CreateFile(path, content, overwriteIfExists))
-			{
+			{		
+				var templateFolder = solution.GetAllSolutionItems<SolutionFolder>().FirstOrDefault (x => x.Name == "Template");
+				//var templateFolder = solutionFolders.FirstOrDefault (x => x.Name == "Template");
+				if (templateFolder == null) {
+					// Create Template solution folder
+					templateFolder = new SolutionFolder { Name = "Template" };
+					solution.RootFolder.AddItem (templateFolder);
+				}
+
+				IdeApp.ProjectOperations.AddFilesToSolutionFolder (templateFolder, new string[] { path });
+				solution.Save (new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor());
+
+				//projectTemplateFolder.AddItem(
+
+				//IdeApp.ProjectOperations.AddSolutionItem (solution.RootFolder);
+				//solutionFolder.Name = "ProjectTemplate";
+
+				//IdeApp.ProjectOperations.AddFilesToSolutionFolder (solutionFolder);
+				//IdeApp.ProjectOperations.AddFilesToSolutionFolder (solutionFolder, new string[] { path });
+
 				// Add file to solution
-				proj.AddFile(path);
-				proj.Save (null);
+				//proj.AddFile(path);
+				//proj.Save (null);
 			}
 		}
 
