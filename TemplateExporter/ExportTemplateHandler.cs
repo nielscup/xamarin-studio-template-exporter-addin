@@ -107,7 +107,7 @@ namespace TemplateExporter
 							// create new file, so we can replace namespaces and projectname					
 							var content = File.ReadAllText(file.FilePath);
 							content = content.Replace(proj.Name, "${Namespace}");
-							content = content.Replace(solution.Name, "${ProjectName}");
+							content = content.Replace(solution.Name, "${SolutionName}");
 							CreateFile(templateFilePath, content, true);
 						}
 

@@ -1,6 +1,7 @@
 ﻿
-		<Project name="${ProjectName}.Core" directory="./${ProjectName}.Core" type="[PROJECTTYPE]">
-			<Options />
+		<Project name="${ProjectName}.Core" directory="./${ProjectName}.Core" type="[PROJECTTYPE]">			
+			<!--<Options OutputType="Library" Target="Library"/>-->
+			<Options Target="Library" />
 			<References>
 				[REFERENCES]
 			</References>
