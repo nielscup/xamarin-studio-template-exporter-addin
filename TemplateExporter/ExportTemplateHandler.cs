@@ -39,18 +39,23 @@ namespace TemplateExporter
 				foreach (var project in projects) {
 					switch (project.GetType().FullName) {
 						case "MonoDevelop.MonoDroid.MonoDroidProject":
-							proj = (Project)project;
+							//proj = (Project)project;
 							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
 							break;
 						case "MonoDevelop.Projects.PortableDotNetProject":
-							proj = (Project)project;
+							//proj = (Project)project;
 							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
+							break;
+						case "MonoDevelop.IPhone.XamarinIOSProject":
+							//proj = (Project)project;
+							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
 							break;
 						default:
 							continue;
 							break;
 					}
 
+					proj = (Project)project;
 					var files = proj.Files;
 
 					if (!files.Any ())

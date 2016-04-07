@@ -44,6 +44,7 @@
     <None Include="Xml\AddIn.xml" />
     <None Include="Xml\ProjectAndroid.xml" />
     <None Include="Xml\ProjectPcl.xml" />
+    <None Include="Xml\ProjectiOS.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Xml\" />
