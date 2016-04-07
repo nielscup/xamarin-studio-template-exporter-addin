@@ -13,6 +13,7 @@ namespace TemplateExporter
 {
 	class ExportTemplateHandler:CommandHandler
 	{
+		Solution solution;
 		Project proj;
 		List<SolutionItem> projects;
 		string rootDir;
@@ -26,8 +27,6 @@ namespace TemplateExporter
 				StringBuilder runtimeXml = new StringBuilder();
 				StringBuilder projectsXml = new StringBuilder();
 
-				//var rootDir = files [0].FilePath.ParentDirectory;
-				//var projectTemplate = "ProjectTemplate";
 				var templateDir = Path.Combine (rootDir, "ProjectTemplate");
 
 				// Cleanup: Delete template directory if it exists
@@ -43,33 +42,20 @@ namespace TemplateExporter
 							proj = (Project)project;
 							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
 							break;
-//						case "MonoDevelop.Projects.PortableDotNetProject":
-//							proj = (Project)project;
-//							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
-//							break;
+						case "MonoDevelop.Projects.PortableDotNetProject":
+							proj = (Project)project;
+							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
+							break;
 						default:
 							continue;
 							break;
 					}
-
-
 
 					var files = proj.Files;
 
 					if (!files.Any ())
 						return;
 					
-//					//var rootDir = files [0].FilePath.ParentDirectory;
-//					//var projectTemplate = "ProjectTemplate";
-//					var templateDir = Path.Combine (rootDir, "ProjectTemplate");
-//
-//					// Cleanup: Delete template directory if it exists
-//					if(Directory.Exists(templateDir))
-//						Directory.Delete (templateDir, true);
-//
-//					// Create template directory
-//					Directory.CreateDirectory (templateDir);
-
 					StringBuilder filesXml = new StringBuilder();
 
 					string packages = "";
@@ -77,10 +63,9 @@ namespace TemplateExporter
 
 					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)proj).References) {
 						if(reference.ReferenceType != ReferenceType.Assembly)
-							references.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference));							
+							references.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference.Replace(solution.Name, "${ProjectName}")));							
 					}
 
-					//filesXml.Append(string.Format("\n\t\t\t<Directory name=\"{0}\">", proj.Name));
 					runtimeXml.Append("<Import file=\"ProjectTemplate.xpt.xml\" />");
 
 					int i = -1;
@@ -119,9 +104,10 @@ namespace TemplateExporter
 						}
 						else
 						{
-							// create file, so we can replace namespaces					
+							// create new file, so we can replace namespaces and projectname					
 							var content = File.ReadAllText(file.FilePath);
 							content = content.Replace(proj.Name, "${Namespace}");
+							content = content.Replace(solution.Name, "${ProjectName}");
 							CreateFile(templateFilePath, content, true);
 						}
 
@@ -129,17 +115,18 @@ namespace TemplateExporter
 						AppendFile(ref filesXml, file, proj.Name);
 					}
 
-					//filesXml.Append("\n\t\t\t</Directory>");
-
+					// Replace placeholders
 					projectsXml = projectsXml.Replace("[FILES]", filesXml.ToString());
 					projectsXml = projectsXml.Replace("[PACKAGES]", packages);
 					projectsXml = projectsXml.Replace("[DIRECTORY]", proj.Name);
 					projectsXml = projectsXml.Replace("[REFERENCES]", references.ToString());
+					projectsXml = projectsXml.Replace("[PROJECTTYPE]", proj.ProjectType);
+
 				}
 
 				// Set template xml file paths
 				var xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
-				var addinFile = Path.Combine(rootDir, proj.Name + ".addin.xml");
+				var addinFile = Path.Combine(rootDir, solution.Name + ".addin.xml");
 
 				// Get templated xml				
 				var xptTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "Xpt.xml"));
@@ -156,11 +143,9 @@ namespace TemplateExporter
 				var version = GetVersion(addInXml);
 
 				// Replace placeholders
-				addInXml = addInXml.Replace("[PROJECTNAME]", proj.Name);
+				addInXml = addInXml.Replace("[PROJECTNAME]", solution.Name);
 				addInXml = addInXml.Replace("[RUNTIME]", runtimeXml.ToString());
 				xptXml = xptXml.Replace("[VERSION]", string.Format ("v{0}", version));
-//				xptXml = xptXml.Replace("[FILES]", filesXml.ToString());
-//				xptXml = xptXml.Replace("[PACKAGES]", packages);
 				xptXml = xptXml.Replace("[PROJECTS]", projectsXml.ToString());
 
 				// Write template files
@@ -168,13 +153,13 @@ namespace TemplateExporter
 				File.WriteAllText (addinFile.Replace(rootDir, templateDir), addInXml);
 
 				// create .mpack
-				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", proj.Name)))
+				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", solution.Name)))
 				{
 					Console.WriteLine("Export Template ERROR: Unable to generate .mpack");
 					return;
 				}
 
-				var mpack = string.Format("MonoDevelop.{0}_{1}.mpack", proj.Name, version);
+				var mpack = string.Format("MonoDevelop.{0}_{1}.mpack", solution.Name, version);
 				File.Copy(Path.Combine(templateDir, mpack), Path.Combine(rootDir, mpack), true);
 
 				// install .mpack: INSTALL NOT WORKING...
@@ -198,10 +183,9 @@ namespace TemplateExporter
 			if (IdeApp.ProjectOperations.CurrentSelectedItem is MonoDevelop.Projects.Solution) {
 				info.Enabled = true;
 
-				var solution = (MonoDevelop.Projects.Solution)IdeApp.ProjectOperations.CurrentSelectedItem;
+				solution = (MonoDevelop.Projects.Solution)IdeApp.ProjectOperations.CurrentSelectedItem;
 				rootDir = solution.ItemDirectory.ToString ();
 				projects = solution.Items.ToList();
-				//rootDir = solution.
 			}
 			else
 			{
