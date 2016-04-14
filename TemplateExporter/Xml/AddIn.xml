@@ -25,7 +25,7 @@
 
 	<!--Custom Package repository, path is relative to template installation dir (/Users/nielscup/Library/Application Support/XamarinStudio-5.0/LocalInstall/Addins/MyTemplate/...)-->
 	<Extension path="/MonoDevelop/Ide/ProjectTemplatePackageRepositories">
-		<PackageRepository path="../../../../../../../Documents/nuget_packages"/>
+		<PackageRepository path="../../../../../../Documents/nuget_packages"/>
 	</Extension>
 
 	<Extension path="/MonoDevelop/Ide/ProjectTemplateCategories">
