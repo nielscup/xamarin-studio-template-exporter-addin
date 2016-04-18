@@ -1,12 +1,11 @@
 ﻿<?xml version="1.0"?>
 <Template>
 	<TemplateConfiguration>
-		<_Name>Empty MyCompany Android App [VERSION]</_Name>
-		<_Category>Empty MyCompany Android Project Template</_Category>
-		<Category>MyCompany/android/general</Category>
+		<_Name>[TEMPLATENAME] [VERSION]</_Name>
+		<Category>[CATEGORY]</Category>
 		<Icon>monodroid-project</Icon>
 		<LanguageName>C#</LanguageName>
-		<_Description>Creates an empty MyCompany Android Application.</_Description>
+		<_Description>[TEMPLATEDESCRIPTION]</_Description>
 	</TemplateConfiguration>
 	
 	<!--<Actions>
@@ -14,9 +13,9 @@
 	</Actions>-->
 	
 	<Combine name="${ProjectName}" directory=".">
-		<Options>
+		<!---<Options>
 			<StartupProject>${ProjectName}</StartupProject>
-		</Options>
+		</Options>-->
 		[PROJECTS]
 	</Combine>
 </Template>

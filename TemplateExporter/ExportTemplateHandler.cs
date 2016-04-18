@@ -17,6 +17,9 @@ namespace TemplateExporter
 		Project proj;
 		List<SolutionItem> projects;
 		string rootDir;
+		string xptFile;
+		string addinFile;
+		XmlDocument addinXmlDoc;
 
 		protected override void Run ()
 		{
@@ -129,9 +132,14 @@ namespace TemplateExporter
 
 				}
 
-				// Set template xml file paths
-				var xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
-				var addinFile = Path.Combine(rootDir, solution.Name + ".addin.xml");
+				LoadXmlFiles();
+
+//				// Set template xml file paths
+//				xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
+//				addinFile = Path.Combine(rootDir, solution.Name + ".addin.xml");
+//
+//				addinXmlDoc = new XmlDocument ();			
+//				addinXmlDoc.Load (addinFile);
 
 				// Get templated xml				
 				var xptTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "Xpt.xml"));
@@ -145,13 +153,19 @@ namespace TemplateExporter
 				var xptXml = File.ReadAllText(xptFile);
 				var addInXml = File.ReadAllText(addinFile);
 
-				var version = GetVersion(addInXml);
+				var version = GetAddInAttr("Addin", "version");
+				var templateName = GetAddInAttr("Addin", "name");
+				var templateDescription = GetAddInAttr("Addin", "description");
+				var category = GetCategory();
 
 				// Replace placeholders
 				addInXml = addInXml.Replace("[PROJECTNAME]", solution.Name);
 				addInXml = addInXml.Replace("[RUNTIME]", runtimeXml.ToString());
 				xptXml = xptXml.Replace("[VERSION]", string.Format ("v{0}", version));
 				xptXml = xptXml.Replace("[PROJECTS]", projectsXml.ToString());
+				xptXml = xptXml.Replace("[TEMPLATENAME]", templateName);
+				xptXml = xptXml.Replace("[TEMPLATEDESCRIPTION]", templateDescription);
+				xptXml = xptXml.Replace("[CATEGORY]", category);
 
 				// Write template files
 				File.WriteAllText (xptFile.Replace(rootDir, templateDir), xptXml);				
@@ -183,6 +197,17 @@ namespace TemplateExporter
 			}
 		}
 
+		private void LoadXmlFiles()
+		{
+			// Set template xml file paths
+			xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
+			addinFile = Path.Combine(rootDir, solution.Name + ".addin.xml");
+
+			addinXmlDoc = new XmlDocument ();			
+			addinXmlDoc.Load (addinFile);
+
+		}
+
 		protected override void Update (CommandInfo info)
 		{		
 			if (IdeApp.ProjectOperations.CurrentSelectedItem is MonoDevelop.Projects.Solution) {
@@ -197,9 +222,6 @@ namespace TemplateExporter
 				info.Enabled = false;
 				projects = null;
 			}
-
-			//proj = IdeApp.ProjectOperations.CurrentSelectedProject;		
-			//info.Enabled = proj != null;
 		}
 
 		private void AppendFile(ref StringBuilder filesXml, ProjectFile file, string projectDir)
@@ -241,13 +263,36 @@ namespace TemplateExporter
 				|| file.ProjectVirtualPath.Extension.ToLower () == ".txt";
 		}
 
-		private string GetVersion(string addInXml)
-		{			
-			// gets the version number from addInXml
-			var v = "version=\"";
-			var iVersion = addInXml.ToLower().IndexOf(v) + v.Length;
-			var iEnd = addInXml.ToLower().IndexOf("\"", iVersion);
-			return addInXml.Substring(iVersion, iEnd - iVersion);
+		/// <summary>
+		/// Gets the category from the addin.xml and converts it to the category path needed in xpt.xml, This way we only need to set the category once in the addin.xml.
+		/// </summary>
+		/// <returns>The category.</returns>
+		private string GetCategory()
+		{
+			var extensions = addinXmlDoc.SelectNodes ("/Addin/Extension");
+
+			XmlNode categoryExtension = null;
+			foreach (XmlNode extension in extensions) {
+				if(extension.Attributes.GetNamedItem("path").Value == "/MonoDevelop/Ide/ProjectTemplateCategories")
+				{
+					categoryExtension = extension;
+					break;
+				}
+			}
+
+			var cat1 = categoryExtension.SelectSingleNode ("Category");
+			var cat2 = cat1.SelectSingleNode ("Category");
+			var cat3 = cat2.SelectSingleNode ("Category");
+
+			var category = Path.Combine (cat1.Attributes.GetNamedItem ("id").Value, cat2.Attributes.GetNamedItem ("id").Value, cat3.Attributes.GetNamedItem ("id").Value);
+
+			return category;
+		}
+
+		private string GetAddInAttr(string node, string attr)
+		{	
+			var addinNode = addinXmlDoc.SelectSingleNode(node);
+			return addinNode.Attributes.GetNamedItem(attr).Value;
 		}
 
 		private bool RunMDTool(string rootDir, string arguments)
