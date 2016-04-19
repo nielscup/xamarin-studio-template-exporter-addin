@@ -3,7 +3,7 @@
 	<TemplateConfiguration>
 		<_Name>[TEMPLATENAME] [VERSION]</_Name>
 		<Category>[CATEGORY]</Category>
-		<Icon>monodroid-project</Icon>
+		<Icon>md-platform-cross-platform</Icon>
 		<LanguageName>C#</LanguageName>
 		<_Description>[TEMPLATEDESCRIPTION]</_Description>
 	</TemplateConfiguration>
