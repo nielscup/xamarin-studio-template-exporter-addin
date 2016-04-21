@@ -10,4 +10,14 @@
         <CommandItem id="TemplateExporter.ExportTemplateCommands.ExportTemplate" />
     </Extension>
 
+    <Extension path = "/MonoDevelop/Ide/Commands/File">
+        <Command id = "TemplateExporter.ExportTemplateCommands.FinalizeTemplate"
+             _label = "Finalize Template"
+             defaultHandler = "TemplateExporter.FinalizeTemplateHandler" />
+    </Extension>
+
+    <Extension path = "/MonoDevelop/Ide/MainMenu/File">
+        <CommandItem id="TemplateExporter.ExportTemplateCommands.FinalizeTemplate" />
+    </Extension>
+
 </ExtensionModel>

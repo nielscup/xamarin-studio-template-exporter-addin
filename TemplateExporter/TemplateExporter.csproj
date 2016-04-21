@@ -32,6 +32,7 @@
     <Compile Include="Properties\AddinInfo.cs" />
     <Compile Include="ExportTemplateHandler.cs" />
     <Compile Include="ExportTemplateCommands.cs" />
+    <Compile Include="FinalizeTemplateHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Manifest.addin.xml" />
@@ -45,6 +46,8 @@
     <None Include="Xml\ProjectAndroid.xml" />
     <None Include="Xml\ProjectPcl.xml" />
     <None Include="Xml\ProjectiOS.xml" />
+    <None Include="Xml\ProjectDotNetAssembly.xml" />
+    <None Include="Xml\ProjectTemplateFinalizer.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Xml\" />

@@ -21,6 +21,7 @@ namespace TemplateExporter
 		string xptFile;
 		string addinFile;
 		XmlDocument addinXmlDoc;
+		bool isSolutionTemplateCreated;
 
 		protected override void Run ()
 		{
@@ -56,6 +57,12 @@ namespace TemplateExporter
 						case "MonoDevelop.IPhone.XamarinIOSProject":
 							projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
 							break;
+//						case "MonoDevelop.Projects.DotNetAssemblyProject":
+//							if(project.Name.ToLower() == "templatefinalizer")
+//								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectTemplateFinalizer.xml")));
+//							else
+//								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectDotNetAssembly.xml")));						
+//							break;
 						default:
 							continue;
 					}
@@ -64,6 +71,7 @@ namespace TemplateExporter
 
 					proj = (Project)project;
 					AddOriginalProjectFile(proj);
+					AddOriginalSolutionFile(proj);
 
 					var files = proj.Files;
 
@@ -197,7 +205,7 @@ namespace TemplateExporter
 				// Display Success message:
 				progressDialog.ShowDone(false, false);
 				progressDialog.WriteText("Template successfully exported to: "+ mpackPath);
-				progressDialog.Message = "Export Template SUCCESS.";
+				progressDialog.Message = "Export Template SUCCESS: " + mpack;
 
 			} 
 			catch (Exception ex) 
@@ -214,14 +222,32 @@ namespace TemplateExporter
 		private void AddOriginalProjectFile(Project project)
 		{
 			var projectFilePath = Path.Combine(project.BaseDirectory.ToString(), project.Name + ".csproj");
-			var destinationPath = Path.Combine(project.BaseDirectory.ToString(), project.Name.Replace(solution.Name, "PROJECTNAME") + ".csproj.txt");
+			var destinationPath = Path.Combine(project.BaseDirectory.ToString(), project.Name.Replace(project.Name, "TEMPLATE") + ".csproj.txt");
 
 			if(!File.Exists(projectFilePath))
 				return;
 
 			var projectFileContent = File.ReadAllText(projectFilePath);
-			projectFileContent = projectFileContent.Replace(solution.Name, "[PROJECTNAME]");
+			projectFileContent = projectFileContent.Replace(project.Name, "[PROJECTNAME]");
 			AddProjectFile (destinationPath, projectFileContent, true);
+		}
+
+		private void AddOriginalSolutionFile(Project project)
+		{
+			if (isSolutionTemplateCreated)
+				return;
+			
+			var solutionFilePath = Path.Combine(solution.BaseDirectory.ToString(), solution.Name + ".sln");
+			var destinationPath = Path.Combine(project.BaseDirectory.ToString(), solution.Name.Replace(solution.Name, "TEMPLATE") + ".sln.txt");
+
+			if(!File.Exists(solutionFilePath))
+				return;
+
+			var solutionFileContent = File.ReadAllText(solutionFilePath);
+			solutionFileContent = solutionFileContent.Replace(solution.Name, "[SOLUTIONNAME]");
+
+			AddProjectFile (destinationPath, solutionFileContent, true);
+			isSolutionTemplateCreated = true;
 		}
 
 		private bool ExcludeFile(ProjectFile file, int i)

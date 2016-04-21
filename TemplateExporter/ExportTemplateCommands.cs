@@ -4,7 +4,8 @@ namespace TemplateExporter
 {
 	public enum ExportTemplateCommands
 	{
-		ExportTemplate
+		ExportTemplate,
+		FinalizeTemplate
 	}
 }
 

@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateExporter", "TemplateExporter\TemplateExporter.csproj", "{A6FAD7B2-9CF8-4AE3-99BE-BDEA75DAE8EE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MpackCreator", "MpackCreator\MpackCreator.csproj", "{DD998EC0-0169-447E-A905-7A709C984117}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{A6FAD7B2-9CF8-4AE3-99BE-BDEA75DAE8EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6FAD7B2-9CF8-4AE3-99BE-BDEA75DAE8EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6FAD7B2-9CF8-4AE3-99BE-BDEA75DAE8EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD998EC0-0169-447E-A905-7A709C984117}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD998EC0-0169-447E-A905-7A709C984117}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD998EC0-0169-447E-A905-7A709C984117}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD998EC0-0169-447E-A905-7A709C984117}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

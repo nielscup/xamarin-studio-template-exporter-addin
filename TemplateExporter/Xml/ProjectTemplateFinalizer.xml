@@ -1,0 +1,13 @@
+﻿
+		<Project name="${ProjectName}.TemplateFinalizer" directory="./${ProjectName}.TemplateFinalizer" type="[PROJECTTYPE]">	
+			<Options />
+			<References>
+				[REFERENCES]
+			</References>
+			<Packages>
+				[PACKAGES]
+			</Packages>
+			<Files>
+				[FILES]
+			</Files>
+		</Project>
