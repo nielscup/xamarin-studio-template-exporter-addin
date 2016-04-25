@@ -46,8 +46,10 @@ namespace MpackCreator
 			Console.WriteLine("exitCode: " + process.ExitCode);
 
 			if (process.ExitCode != 0) {
-				Console.WriteLine("mdtool EXCEPTION: exitCode: {0}", process.ExitCode);
+				Console.WriteLine ("mdtool EXCEPTION: exitCode: {0}", process.ExitCode);
 				return false;
+			} else {
+				Console.WriteLine ("Successfully created mpack: {0}", rootDir);
 			}
 
 			return true;

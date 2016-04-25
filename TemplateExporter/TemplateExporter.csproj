@@ -33,6 +33,7 @@
     <Compile Include="ExportTemplateHandler.cs" />
     <Compile Include="ExportTemplateCommands.cs" />
     <Compile Include="FinalizeTemplateHandler.cs" />
+    <Compile Include="Xml\Xml.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Manifest.addin.xml" />
@@ -48,6 +49,7 @@
     <None Include="Xml\ProjectiOS.xml" />
     <None Include="Xml\ProjectDotNetAssembly.xml" />
     <None Include="Xml\ProjectTemplateFinalizer.xml" />
+    <None Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Xml\" />
