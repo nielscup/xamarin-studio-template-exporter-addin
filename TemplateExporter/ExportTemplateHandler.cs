@@ -34,32 +34,19 @@ namespace TemplateExporter
 				progressDialog.Progress = 0;
 				progressDialog.Show();
 
-				//Log ("1");
-
-				//var exporterDir = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
-
-				//Log ("2");
-
 				StringBuilder runtimeXml = new StringBuilder();
 				StringBuilder projectsXml = new StringBuilder();
 
 				var templateDir = Path.Combine (rootDir, "ProjectTemplate");
 
-				//Log ("3");
-
 				// Cleanup: Delete template directory if it exists
 				if(Directory.Exists(templateDir))
 					Directory.Delete (templateDir, true);
 
-				//Log ("4");
-
 				// Create template directory
 				Directory.CreateDirectory (templateDir);
 
-				//Log ("5");
-
 				foreach (var project in projects) {
-					//Log ("6");
 					switch (project.GetType().FullName) {
 						case "MonoDevelop.MonoDroid.MonoDroidProject":
 							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
@@ -85,14 +72,12 @@ namespace TemplateExporter
 
 					progressDialog.Progress = 100;
 
-					//Log ("7");
 					proj = (Project)project;
 					AddOriginalProjectFile(proj);
 					AddOriginalSolutionFile(proj);
 
 					var files = proj.Files;
 
-					//Log ("8");
 					if (!files.Any ())
 						return;
 					
@@ -100,13 +85,11 @@ namespace TemplateExporter
 					StringBuilder referencesXml = new StringBuilder();
 					string packagesXml = "";
 
-					//Log ("9");
 					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)proj).References) {
 						if(reference.ReferenceType != ReferenceType.Assembly)
 							referencesXml.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference.Replace(solution.Name, "${ProjectName}")));							
 					}
 
-					//Log ("10");
 					runtimeXml.Append("<Import file=\"ProjectTemplate.xpt.xml\" />");
 
 					int i = -1;
@@ -123,25 +106,12 @@ namespace TemplateExporter
 
 						// Exclude unnecassary files from template
 						if(ExcludeFile(file, i)) continue;
-							
-//						// Exclude files from template
-//						if(file.FilePath.ToString().ToLower().Contains("/bin/") || 
-//							file.FilePath.ToString().ToLower().Contains("/projecttemplate/") ||
-//							file.FilePath.ToString().ToLower().Contains("/packages/") ||
-//							file.FilePath.ToString().ToLower().EndsWith(".xpt.xml") ||
-//							file.FilePath.ToString().ToLower().EndsWith(".addin.xml") ||
-//							file.FilePath.Extension == string.Empty)
-//						{	
-//							Console.WriteLine("{0} Export Template SKIP: {1}", i, file.FilePath);
-//							continue;
-//						}
 
 						// Copy or Create files from project to ProjectTemplate directory
 						var dir = Path.GetDirectoryName(file.FilePath).Replace(rootDir, templateDir);
 						Directory.CreateDirectory (dir);
 						var templateFilePath = Path.Combine(dir, file.ProjectVirtualPath.FileName);
 						Log(string.Format("{0} Export Template Copy: {1}", i, file.FilePath));
-						//Console.WriteLine("{0} Export Template Copy: {1}", i, file.FilePath);
 
 						if(file.ProjectVirtualPath.Extension.ToLower() == ".png")
 						{
@@ -172,15 +142,9 @@ namespace TemplateExporter
 
 				LoadTemplateFiles();
 
-				// Get templated xml				
-				//var xptTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "Xpt.xml"));
-				//var addInTemplateXml = File.ReadAllText(Path.Combine(exporterDir, "Xml", "AddIn.xml"));
-
 				// Creates the template files (addin.xml and xpt.xml) if not exists for target project
 				AddSolutionFile (xptFile, Xml.XptXml, "Template");
 				AddSolutionFile (addinFile, Xml.AddinXml, "Template");
-//				AddSolutionFile (xptFile, xptTemplateXml, "Template");
-//				AddSolutionFile (addinFile, addInTemplateXml, "Template");
 
 				// Get xml from template files
 				var xptXml = File.ReadAllText(xptFile);
@@ -209,7 +173,6 @@ namespace TemplateExporter
 				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", solution.Name)))
 				{
 					Log(string.Format("Export Template ERROR: Unable to generate .mpack"));
-					//Console.WriteLine("Export Template ERROR: Unable to generate .mpack");
 					return;
 				}
 
@@ -224,26 +187,19 @@ namespace TemplateExporter
 //					return;
 //				}
 
-				//Log(string.Format("Export Template SUCCESS {0}", mpack));
-				//Console.WriteLine("Export Template SUCCESS.");
-
 				// Display Success message:
 				progressDialog.ShowDone(false, false);
 				Log(string.Format("Template successfully exported to: {0}", mpackPath));
-				//progressDialog.WriteText("Template successfully exported to: "+ mpackPath);
 				progressDialog.Message = "Export Template SUCCESS: " + mpack;
 
 			} 
 			catch (Exception ex) 
-			{
-				// Log exception
-				//Console.WriteLine ("Export Template EXCEPTION: {0}", ex.Message);
-				Log(string.Format("Export Template EXCEPTION: {0}", ex.Message));
-
+			{				
 				// Display Error message:
 				progressDialog.ShowDone(false, true);
-				//progressDialog.WriteText (ex.Message);
-				progressDialog.WriteText (ex.InnerException.Message);
+
+				// Log exception
+				Log(string.Format("Export Template EXCEPTION: {0}", ex.Message));
 			}
 		}
 
@@ -288,7 +244,6 @@ namespace TemplateExporter
 				file.FilePath.ToString().ToLower().EndsWith(".addin.xml") ||
 				file.FilePath.Extension == string.Empty)
 			{	
-				//Console.WriteLine("{0} Export Template SKIP: {1}", i, file.FilePath);
 				Log(string.Format("{0} Export Template SKIP: {1}", i, file.FilePath));
 				return true;
 			}
@@ -423,7 +378,6 @@ namespace TemplateExporter
 		/// <param name="arguments">Arguments.</param>
 		private bool RunMDTool(string workingDir, string arguments)
 		{	
-			//Console.WriteLine("Running mdtool: " + arguments);
 			Log(string.Format("Running mdtool: {0}", arguments));
 			var processStartInfo = new ProcessStartInfo
 			{
@@ -442,16 +396,10 @@ namespace TemplateExporter
 
 			process.WaitForExit();
 
-			//Log("output: " + output);
-			//Log("error: " + error);
 			Log("exitCode: " + process.ExitCode);
 
-//			Console.WriteLine("output: " + output);
-//			Console.WriteLine("error: " + error);
-//			Console.WriteLine("exitCode: " + process.ExitCode);
 
 			if (process.ExitCode != 0) {
-				//Console.WriteLine("mdtool EXCEPTION: exitCode: {0}", process.ExitCode);
 				Log(string.Format("mdtool EXCEPTION: exitCode: {0}", process.ExitCode));
 				return false;
 			}
