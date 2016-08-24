@@ -24,7 +24,7 @@ namespace TemplateExporter
 		bool isSolutionTemplateCreated;
 		MonoDevelop.Ide.Gui.Dialogs.ProgressDialog progressDialog;
 
-		protected override void Run ()
+		protected override async void Run ()
 		{			
 			progressDialog = new MonoDevelop.Ide.Gui.Dialogs.ProgressDialog(false, true);
 			progressDialog.Title = "Export Template";
@@ -46,35 +46,63 @@ namespace TemplateExporter
 				// Create template directory
 				Directory.CreateDirectory (templateDir);
 
+				double progressInterval = 1.0 / projects.Count();
+
 				foreach (var project in projects) {
-					switch (project.GetType().FullName) {
-						case "MonoDevelop.MonoDroid.MonoDroidProject":
+					var projType = ((DotNetProject)project).TargetFramework.Id.Identifier;
+					switch (projType)
+					{
+						case "MonoAndroid":
 							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
 							projectsXml.Append(Xml.AndroidXml);
+							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{EFBA0AD7-5A72-4C68-AF49-83D382785DCF}");
 							break;
-						case "MonoDevelop.Projects.PortableDotNetProject":
+						case ".NETPortable":
 							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
 							projectsXml.Append(Xml.PclXml);
+							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{786C830F-07A1-408B-BD7F-6EE04809D6DB}");
 							break;
-						case "MonoDevelop.IPhone.XamarinIOSProject":
+						case "Xamarin.iOS":
 							projectsXml.Append(Xml.iOSXml);
+							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FEACFBD2-3405-455C-9665-78FE426C6842}");
 							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
 							break;
-//						case "MonoDevelop.Projects.DotNetAssemblyProject":
-//							if(project.Name.ToLower() == "templatefinalizer")
-//								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectTemplateFinalizer.xml")));
-//							else
-//								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectDotNetAssembly.xml")));						
-//							break;
 						default:
 							continue;
 					}
+//					switch (project.GetType().FullName) {
+//						case "MonoDevelop.MonoDroid.MonoDroidProject":
+//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
+//							projectsXml.Append(Xml.AndroidXml);
+//							break;
+//						case "MonoDevelop.Projects.PortableDotNetProject":
+//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
+//							projectsXml.Append(Xml.PclXml);
+//							break;
+//						case "MonoDevelop.IPhone.XamarinIOSProject":
+//							projectsXml.Append(Xml.iOSXml);
+//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
+//							break;
+//						case "MonoDevelop.CSharp.Project.CSharpProject":
+//							projectsXml.Append(Xml.PclXml);
+//							break;
+////						case "MonoDevelop.Projects.DotNetAssemblyProject":
+////							if(project.Name.ToLower() == "templatefinalizer")
+////								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectTemplateFinalizer.xml")));
+////							else
+////								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectDotNetAssembly.xml")));						
+////							break;
+//						default:
+//							continue;
+//					}
 
-					progressDialog.Progress = 100;
+					//progressDialog.Progress = 100;
 
 					proj = (Project)project;
-					AddOriginalProjectFile(proj);
-					AddOriginalSolutionFile(proj);
+					//var dotNetProj = (DotNetProject)project;
+					//dotNetProj.TargetFramework.
+					await AddOriginalProjectFile(proj);
+					await AddOriginalSolutionFile(proj);
 
 					var files = proj.Files;
 
@@ -129,22 +157,27 @@ namespace TemplateExporter
 
 						runtimeXml.Append(string.Format("\n\t\t<Import file=\"{0}/{1}\" />", proj.Name, file.ProjectVirtualPath));
 						AppendFile(ref filesXml, file, proj.Name);
+
+
 					}
 
 					// Replace placeholders
 					projectsXml = projectsXml.Replace("[FILES]", filesXml.ToString());
 					projectsXml = projectsXml.Replace("[PACKAGES]", packagesXml);
 					projectsXml = projectsXml.Replace("[REFERENCES]", referencesXml.ToString());
-					projectsXml = projectsXml.Replace("[PROJECTTYPE]", proj.ProjectType);
+					//projectsXml = projectsXml.Replace("[PROJECTTYPE]", proj.TypeGuid);
+					//projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{786C830F-07A1-408B-BD7F-6EE04809D6DB}");
 					projectsXml = projectsXml.Replace("[DIRECTORY]", proj.Name);
+					projectsXml = projectsXml.Replace("[TARGETFRAMEWORK]", ((DotNetProject)project).TargetFramework.Id.ToString());
 
+					progressDialog.Progress += progressInterval;
 				}
 
 				LoadTemplateFiles();
 
 				// Creates the template files (addin.xml and xpt.xml) if not exists for target project
-				AddSolutionFile (xptFile, Xml.XptXml, "Template");
-				AddSolutionFile (addinFile, Xml.AddinXml, "Template");
+				await AddSolutionFile (xptFile, Xml.XptXml, "Template");
+				await AddSolutionFile (addinFile, Xml.AddinXml, "Template");
 
 				// Get xml from template files
 				var xptXml = File.ReadAllText(xptFile);
@@ -203,7 +236,7 @@ namespace TemplateExporter
 			}
 		}
 
-		private void AddOriginalProjectFile(Project project)
+		private async Task AddOriginalProjectFile(Project project)
 		{
 			var projectFilePath = Path.Combine(project.BaseDirectory.ToString(), project.Name + ".csproj");
 			var destinationPath = Path.Combine(project.BaseDirectory.ToString(), project.Name.Replace(project.Name, "TEMPLATE") + ".csproj.txt");
@@ -213,10 +246,10 @@ namespace TemplateExporter
 
 			var projectFileContent = File.ReadAllText(projectFilePath);
 			projectFileContent = projectFileContent.Replace(project.Name, "[PROJECTNAME]");
-			AddProjectFile (destinationPath, projectFileContent, true);
+			await AddProjectFile (destinationPath, projectFileContent, true);
 		}
 
-		private void AddOriginalSolutionFile(Project project)
+		private async Task AddOriginalSolutionFile(Project project)
 		{
 			if (isSolutionTemplateCreated)
 				return;
@@ -230,7 +263,7 @@ namespace TemplateExporter
 			var solutionFileContent = File.ReadAllText(solutionFilePath);
 			solutionFileContent = solutionFileContent.Replace(solution.Name, "[SOLUTIONNAME]");
 
-			AddProjectFile (destinationPath, solutionFileContent, true);
+			await AddProjectFile (destinationPath, solutionFileContent, true);
 			isSolutionTemplateCreated = true;
 		}
 
@@ -407,11 +440,12 @@ namespace TemplateExporter
 			return true;
 		}
 
-		private void AddSolutionFile(string path, string content, string solutionFolderName, bool overwriteIfExists = false)
+		private async Task AddSolutionFile(string path, string content, string solutionFolderName, bool overwriteIfExists = false)
 		{
 			if(CreateFile(path, content, overwriteIfExists))
-			{		
-				var templateFolder = solution.GetAllSolutionItems<SolutionFolder>().FirstOrDefault (x => x.Name == solutionFolderName);
+			{
+				//var templateFolder = solution.GetAllSolutionItems<SolutionFolder>().FirstOrDefault(x => x.Name == solutionFolderName);
+				var templateFolder = solution.GetAllItems<SolutionFolder>().FirstOrDefault (x => x.Name == solutionFolderName);
 				if (templateFolder == null) {
 					// Create Template solution folder
 					templateFolder = new SolutionFolder { Name = "Template" };
@@ -419,16 +453,16 @@ namespace TemplateExporter
 				}
 
 				IdeApp.ProjectOperations.AddFilesToSolutionFolder (templateFolder, new string[] { path });
-				solution.Save (new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor());
+				await solution.SaveAsync (new MonoDevelop.Core.ProgressMonitoring.ConsoleProgressMonitor());
 			}
 		}
 
-		private void AddProjectFile(string path, string content, bool overwriteIfExists = false)
+		private async Task AddProjectFile(string path, string content, bool overwriteIfExists = false)
 		{
 			if(CreateFile(path, content, overwriteIfExists))
 			{		
 				proj.AddFile (path);
-				proj.Save(new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor());
+				await proj.SaveAsync(new MonoDevelop.Core.ProgressMonitoring.ConsoleProgressMonitor());
 			}
 		}
 

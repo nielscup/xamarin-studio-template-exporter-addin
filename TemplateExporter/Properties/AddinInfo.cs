@@ -5,7 +5,7 @@ using Mono.Addins.Description;
 [assembly:Addin (
 	"TemplateExporter", 
 	Namespace = "TemplateExporter",
-	Version = "0.10"
+	Version = "0.12"
 )]
 
 [assembly:AddinName ("TemplateExporter")]

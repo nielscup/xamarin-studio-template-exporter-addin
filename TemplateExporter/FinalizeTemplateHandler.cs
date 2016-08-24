@@ -178,12 +178,12 @@ namespace TemplateExporter
 			return true;
 		}
 
-		private void DeleteTemplateFolder()
+		private async void DeleteTemplateFolder()
 		{				
-			var templateFolder = solution.GetAllSolutionItems<SolutionFolder>().FirstOrDefault (x => x.Name == "Template");
+			var templateFolder = solution.GetAllItems<SolutionFolder>().FirstOrDefault (x => x.Name == "Template");
 			if (templateFolder != null) {
 				IdeApp.ProjectOperations.RemoveSolutionItem (templateFolder);
-				solution.Save (new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor());
+				await solution.SaveAsync (new MonoDevelop.Core.ProgressMonitoring.ConsoleProgressMonitor());
 			}
 		}
 	}

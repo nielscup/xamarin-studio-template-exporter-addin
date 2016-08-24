@@ -2,7 +2,7 @@
 		<Project name="${ProjectName}.Core" directory="./${ProjectName}.Core" type="[PROJECTTYPE]">			
 			<Options 
 				Target="Library"    			
-    			TargetFrameworkVersion = ".NETPortable,Version=v4.5,Profile=Profile7" />
+    			TargetFrameworkVersion = "[TARGETFRAMEWORK]" />
 			<References>
 				[REFERENCES]
 			</References>
