@@ -32,5 +32,7 @@ To DEBUG TemplateExporter add-in:
 
 RELEASE NOTES:
 
+
+
 0.11:
 Added Xamarin Studio 6 support

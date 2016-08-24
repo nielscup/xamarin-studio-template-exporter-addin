@@ -28,6 +28,8 @@ namespace TemplateExporter
 		{			
 			progressDialog = new MonoDevelop.Ide.Gui.Dialogs.ProgressDialog(false, true);
 			progressDialog.Title = "Export Template";
+			progressDialog.Message = "Exporting " + solution.Name + "...";
+
 			Log ("0");
 
 			try {
@@ -48,55 +50,33 @@ namespace TemplateExporter
 
 				double progressInterval = 1.0 / projects.Count();
 
+				// List of project type guids http://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
+				// since XS6 all exposed projecttype guids are general C# guids, 
+				// but we need the specific project type guids which can be found in the .csproj <ProjectTypeGuids> node.
 				foreach (var project in projects) {
 					var projType = ((DotNetProject)project).TargetFramework.Id.Identifier;
 					switch (projType)
 					{
 						case "MonoAndroid":
-							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
 							projectsXml.Append(Xml.AndroidXml);
 							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{EFBA0AD7-5A72-4C68-AF49-83D382785DCF}");
 							break;
 						case ".NETPortable":
-							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
 							projectsXml.Append(Xml.PclXml);
 							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{786C830F-07A1-408B-BD7F-6EE04809D6DB}");
 							break;
 						case "Xamarin.iOS":
 							projectsXml.Append(Xml.iOSXml);
 							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FEACFBD2-3405-455C-9665-78FE426C6842}");
-							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
 							break;
+						//case ".NETFramework":
+						//	// UnitTest project DOES NOT WORK: unable to generate mpack...
+						//	projectsXml.Append(Xml.UnitTestXml);
+						//	projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
+						//	break;
 						default:
 							continue;
 					}
-//					switch (project.GetType().FullName) {
-//						case "MonoDevelop.MonoDroid.MonoDroidProject":
-//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectAndroid.xml")));
-//							projectsXml.Append(Xml.AndroidXml);
-//							break;
-//						case "MonoDevelop.Projects.PortableDotNetProject":
-//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectPcl.xml")));
-//							projectsXml.Append(Xml.PclXml);
-//							break;
-//						case "MonoDevelop.IPhone.XamarinIOSProject":
-//							projectsXml.Append(Xml.iOSXml);
-//							//projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectiOS.xml")));
-//							break;
-//						case "MonoDevelop.CSharp.Project.CSharpProject":
-//							projectsXml.Append(Xml.PclXml);
-//							break;
-////						case "MonoDevelop.Projects.DotNetAssemblyProject":
-////							if(project.Name.ToLower() == "templatefinalizer")
-////								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectTemplateFinalizer.xml")));
-////							else
-////								projectsXml.Append(File.ReadAllText(Path.Combine(exporterDir, "Xml", "ProjectDotNetAssembly.xml")));						
-////							break;
-//						default:
-//							continue;
-//					}
-
-					//progressDialog.Progress = 100;
 
 					proj = (Project)project;
 					//var dotNetProj = (DotNetProject)project;
@@ -205,7 +185,10 @@ namespace TemplateExporter
 				// create .mpack
 				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", solution.Name)))
 				{
+					// Display Error message:
+					progressDialog.ShowDone(false, true);
 					Log(string.Format("Export Template ERROR: Unable to generate .mpack"));
+
 					return;
 				}
 
@@ -428,9 +411,6 @@ namespace TemplateExporter
 			var output = process.StandardError.ReadToEnd ();
 
 			process.WaitForExit();
-
-			Log("exitCode: " + process.ExitCode);
-
 
 			if (process.ExitCode != 0) {
 				Log(string.Format("mdtool EXCEPTION: exitCode: {0}", process.ExitCode));
