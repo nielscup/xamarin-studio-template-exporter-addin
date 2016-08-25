@@ -1,8 +1,7 @@
-﻿
-		<Project name="${ProjectName}.Core" directory="./${ProjectName}.Core" type="[PROJECTTYPE]">			
+﻿		<Project name="${ProjectName}[PROJECTNAMEEXTENSION]" directory="./${ProjectName}[PROJECTNAMEEXTENSION]" type="[PROJECTTYPE]">			
 			<Options 
 				Target="Library"    			
-    			TargetFrameworkVersion = "[TARGETFRAMEWORK]" />
+				TargetFrameworkVersion = "[TARGETFRAMEWORK]" />
 			<References>
 				[REFERENCES]
 			</References>

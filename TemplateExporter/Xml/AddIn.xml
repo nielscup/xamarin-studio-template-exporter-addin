@@ -1,29 +1,29 @@
-﻿<Addin name="Empty MyCompany Android App"
+﻿<Addin name="My Company Template"
 		id="[PROJECTNAME]"
 		namespace="MonoDevelop"
 		author="Niels Cup"
 		copyright="MIT"
 		url="https://github.com/nielscup"
-		description="Empty MyCompany Android App"
+		description="Creates a My Company Project"
 		category="IDE extensions"
 		version="0.1">
 	<Runtime>
 		[RUNTIME]
 	</Runtime>
 	<Dependencies>
-		<Addin id="Core" version="5.0"/>
-		<Addin id="Ide" version="5.0"/>
+		<Addin id="Core" version="6.0"/>
+		<Addin id="Ide" version="6.0"/>
 	</Dependencies>
 	
 	<Extension path="/MonoDevelop/Ide/ProjectTemplates">
-		<ProjectTemplate id="MyCompanyTemplateDroid-Project" file="ProjectTemplate.xpt.xml" />
+		<ProjectTemplate id="MyCompanyTemplate-Project" file="ProjectTemplate.xpt.xml" />
 	</Extension>
 
 	<!---<Extension path="/MonoDevelop/Ide/ProjectTemplatePackageRepositories">
 		<PackageRepository url="https://cupitcontent.blob.core.windows.net/nuget"/>
 	</Extension>-->
 
-	<!--Custom Package repository, path is relative to template installation dir (/Users/nielscup/Library/Application Support/XamarinStudio-5.0/LocalInstall/Addins/MyTemplate/...)-->
+	<!--Custom Package repository, path is relative to template installation dir (/Users/YOURNAME/Library/Application Support/XamarinStudio-6.0/LocalInstall/Addins/MyTemplate/...)-->
 	<Extension path="/MonoDevelop/Ide/ProjectTemplatePackageRepositories">
 		<PackageRepository path="../../../../../Documents/nuget_packages"/>
 		<PackageRepository path="../../../../../../Documents/nuget_packages"/>

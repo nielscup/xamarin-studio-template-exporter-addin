@@ -1,5 +1,4 @@
-﻿
-		<Project name="${ProjectName}.TemplateFinalizer" directory="./${ProjectName}.TemplateFinalizer" type="[PROJECTTYPE]">	
+﻿		<Project name="${ProjectName}.TemplateFinalizer" directory="./${ProjectName}.TemplateFinalizer" type="[PROJECTTYPE]">	
 			<Options 
 				Target="Exe"    			
     			TargetFrameworkVersion = "4.5"/>

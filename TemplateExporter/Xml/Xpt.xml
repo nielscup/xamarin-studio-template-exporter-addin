@@ -7,16 +7,13 @@
 		<LanguageName>C#</LanguageName>
 		<_Description>[TEMPLATEDESCRIPTION]</_Description>
 	</TemplateConfiguration>
-	
 	<!--<Actions>
-		<Open filename="MainActivity.cs"/>
+		<Open filename="YOUR_STARTUP_FILE.cs"/>
 	</Actions>-->
-	
 	<Combine name="${ProjectName}" directory=".">
 		<!---<Options>
 			<StartupProject>${ProjectName}</StartupProject>
 		</Options>-->
-		[PROJECTS]
+[PROJECTS]
 	</Combine>
 </Template>
-

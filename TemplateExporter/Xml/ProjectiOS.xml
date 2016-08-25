@@ -1,5 +1,4 @@
-﻿
-		<Project name="${ProjectName}.iOS" directory="./${ProjectName}.iOS" type="[PROJECTTYPE]">
+﻿		<Project name="${ProjectName}[PROJECTNAMEEXTENSION]" directory="./${ProjectName}[PROJECTNAMEEXTENSION]" type="[PROJECTTYPE]">
 			<Options />
 			<References>				
 				[REFERENCES]

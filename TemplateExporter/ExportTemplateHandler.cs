@@ -6,7 +6,6 @@ using MonoDevelop.Ide;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Diagnostics;
 using System.Xml;
 using System.Threading.Tasks;
 
@@ -27,10 +26,11 @@ namespace TemplateExporter
 		protected override async void Run ()
 		{			
 			progressDialog = new MonoDevelop.Ide.Gui.Dialogs.ProgressDialog(false, true);
+			Logging.ProgressDialog = progressDialog;
 			progressDialog.Title = "Export Template";
 			progressDialog.Message = "Exporting " + solution.Name + "...";
 
-			Log ("0");
+			Logging.Log ("0");
 
 			try {
 				progressDialog.Progress = 0;
@@ -49,6 +49,7 @@ namespace TemplateExporter
 				Directory.CreateDirectory (templateDir);
 
 				double progressInterval = 1.0 / projects.Count();
+				var projectNameSpace = GetProjectNameSpace();
 
 				// List of project type guids http://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
 				// since XS6 all exposed projecttype guids are general C# guids, 
@@ -69,18 +70,18 @@ namespace TemplateExporter
 							projectsXml.Append(Xml.iOSXml);
 							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FEACFBD2-3405-455C-9665-78FE426C6842}");
 							break;
-						//case ".NETFramework":
-						//	// UnitTest project DOES NOT WORK: unable to generate mpack...
-						//	projectsXml.Append(Xml.UnitTestXml);
-						//	projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
-						//	break;
+						case ".NETFramework":
+							projectsXml.Append(Xml.UnitTestXml);
+							projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
+							break;
 						default:
 							continue;
 					}
 
+					// Set the project name extension so we can have multiple projects of the same type (.iOS, .Android, .Core or whatever is specified in the original project)
+					projectsXml = projectsXml.Replace("[PROJECTNAMEEXTENSION]", project.Name.Replace(projectNameSpace, ""));
+
 					proj = (Project)project;
-					//var dotNetProj = (DotNetProject)project;
-					//dotNetProj.TargetFramework.
 					await AddOriginalProjectFile(proj);
 					await AddOriginalSolutionFile(proj);
 
@@ -119,7 +120,7 @@ namespace TemplateExporter
 						var dir = Path.GetDirectoryName(file.FilePath).Replace(rootDir, templateDir);
 						Directory.CreateDirectory (dir);
 						var templateFilePath = Path.Combine(dir, file.ProjectVirtualPath.FileName);
-						Log(string.Format("{0} Export Template Copy: {1}", i, file.FilePath));
+						Logging.Log(string.Format("{0} Export Template Copy: {1}", i, file.FilePath));
 
 						if(file.ProjectVirtualPath.Extension.ToLower() == ".png")
 						{
@@ -135,29 +136,21 @@ namespace TemplateExporter
 							CreateFile(templateFilePath, content, true);
 						}
 
-						runtimeXml.Append(string.Format("\n\t\t<Import file=\"{0}/{1}\" />", proj.Name, file.ProjectVirtualPath));
+						runtimeXml.Append(string.Format("\n\t\t<Import file=\"{0}\" />", solution.GetRelativeChildPath(file.FilePath)));
 						AppendFile(ref filesXml, file, proj.Name);
-
-
 					}
 
 					// Replace placeholders
 					projectsXml = projectsXml.Replace("[FILES]", filesXml.ToString());
 					projectsXml = projectsXml.Replace("[PACKAGES]", packagesXml);
 					projectsXml = projectsXml.Replace("[REFERENCES]", referencesXml.ToString());
-					//projectsXml = projectsXml.Replace("[PROJECTTYPE]", proj.TypeGuid);
-					//projectsXml = projectsXml.Replace("[PROJECTTYPE]", "{786C830F-07A1-408B-BD7F-6EE04809D6DB}");
 					projectsXml = projectsXml.Replace("[DIRECTORY]", proj.Name);
 					projectsXml = projectsXml.Replace("[TARGETFRAMEWORK]", ((DotNetProject)project).TargetFramework.Id.ToString());
 
 					progressDialog.Progress += progressInterval;
 				}
 
-				LoadTemplateFiles();
-
-				// Creates the template files (addin.xml and xpt.xml) if not exists for target project
-				await AddSolutionFile (xptFile, Xml.XptXml, "Template");
-				await AddSolutionFile (addinFile, Xml.AddinXml, "Template");
+				await LoadTemplateFiles();
 
 				// Get xml from template files
 				var xptXml = File.ReadAllText(xptFile);
@@ -183,11 +176,11 @@ namespace TemplateExporter
 				File.WriteAllText (addinFile.Replace(rootDir, templateDir), addInXml);
 
 				// create .mpack
-				if(!RunMDTool(templateDir, string.Format("-v setup pack {0}.addin.xml", solution.Name)))
+				if(!MDTool.Run(templateDir, string.Format("-v setup pack {0}.addin.xml", solution.Name)))
 				{
 					// Display Error message:
 					progressDialog.ShowDone(false, true);
-					Log(string.Format("Export Template ERROR: Unable to generate .mpack"));
+					Logging.Log(string.Format("Export Template ERROR: Unable to generate .mpack"));
 
 					return;
 				}
@@ -205,7 +198,7 @@ namespace TemplateExporter
 
 				// Display Success message:
 				progressDialog.ShowDone(false, false);
-				Log(string.Format("Template successfully exported to: {0}", mpackPath));
+				Logging.Log(string.Format("Template successfully exported to: {0}", mpackPath));
 				progressDialog.Message = "Export Template SUCCESS: " + mpack;
 
 			} 
@@ -215,8 +208,37 @@ namespace TemplateExporter
 				progressDialog.ShowDone(false, true);
 
 				// Log exception
-				Log(string.Format("Export Template EXCEPTION: {0}", ex.Message));
+				Logging.Log(string.Format("Export Template EXCEPTION: {0}", ex.Message));
 			}
+		}
+
+		/// <summary>
+		/// Gets the project name space
+		/// for example if solution contains projects called Plugin.Xamarin.Core, Plugin.Xamarin.iOS and Plugin.Xamarin.Core.UnitTests
+		/// this funtion returns Pugin.Xamarin
+		/// </summary>
+		/// <returns>The project name space.</returns>
+		string GetProjectNameSpace()
+		{
+			if (!projects.Any()) return string.Empty;
+
+			var projectNameSegments = projects.Select(p => p.Name.Split('.'));
+			var nameSpaceSegments = new List<string>();
+
+			// get the name with the least amount of segments
+			var minSegments = projectNameSegments.Select(n => n.Count()).Min();
+
+			for (int i = 0; i < minSegments; i++)
+			{
+				var segment = projectNameSegments.First()[i];
+				var matchingSegments = projectNameSegments.Where(n => n[i] == segment);
+				if (matchingSegments.Count() == projects.Count())
+				{
+					nameSpaceSegments.Add(segment);
+				}
+			}
+
+			return String.Join(".", nameSpaceSegments);
 		}
 
 		private async Task AddOriginalProjectFile(Project project)
@@ -260,18 +282,22 @@ namespace TemplateExporter
 				file.FilePath.ToString().ToLower().EndsWith(".addin.xml") ||
 				file.FilePath.Extension == string.Empty)
 			{	
-				Log(string.Format("{0} Export Template SKIP: {1}", i, file.FilePath));
+				Logging.Log(string.Format("{0} Export Template SKIP: {1}", i, file.FilePath));
 				return true;
 			}
 
 			return false;
 		}
 
-		private void LoadTemplateFiles()
+		private async Task LoadTemplateFiles()
 		{
 			// Set template xml file paths
 			xptFile = Path.Combine(rootDir, "ProjectTemplate.xpt.xml");
 			addinFile = Path.Combine(rootDir, solution.Name + ".addin.xml");
+
+			// Creates the template files (addin.xml and xpt.xml) if not exists for target project
+			await AddSolutionFile(xptFile, Xml.XptXml, "Template");
+			await AddSolutionFile(addinFile, Xml.AddinXml, "Template");
 
 			addinXmlDoc = new XmlDocument ();			
 			addinXmlDoc.Load (addinFile);
@@ -284,10 +310,10 @@ namespace TemplateExporter
 		/// <param name="info">Info.</param>
 		protected override void Update (CommandInfo info)
 		{		
-			if (IdeApp.ProjectOperations.CurrentSelectedItem is MonoDevelop.Projects.Solution) {
+			if (IdeApp.ProjectOperations.CurrentSelectedItem is Solution) {
 				info.Enabled = true;
 
-				solution = (MonoDevelop.Projects.Solution)IdeApp.ProjectOperations.CurrentSelectedItem;
+				solution = (Solution)IdeApp.ProjectOperations.CurrentSelectedItem;
 				rootDir = solution.ItemDirectory.ToString ();
 				projects = solution.Items.ToList();
 			}
@@ -317,10 +343,9 @@ namespace TemplateExporter
 
 			// append file
 			if(IsRawFile(file))
-				filesXml.Append(string.Format("\n\t\t\t\t<RawFile name=\"{0}\" src=\"{1}\" />", file.ProjectVirtualPath.FileName, Path.Combine(projectDir, file.ProjectVirtualPath)));
+				filesXml.Append(string.Format("\n\t\t\t\t<RawFile name=\"{0}\" src=\"{1}\" />", file.ProjectVirtualPath.FileName, solution.GetRelativeChildPath(file.FilePath)));
 			else
-				filesXml.Append(string.Format("\n\t\t\t\t<File name=\"{0}\" src=\"{1}\" />", file.ProjectVirtualPath.FileName, Path.Combine(projectDir, file.ProjectVirtualPath)));
-
+				filesXml.Append(string.Format("\n\t\t\t\t<File name=\"{0}\" src=\"{1}\" />", file.ProjectVirtualPath.FileName, solution.GetRelativeChildPath(file.FilePath)));
 			for (int i = 0; i < subDirs.Count(); i++) {
 				// close directory node
 				filesXml.Append("\n\t\t\t\t</Directory>");
@@ -386,45 +411,10 @@ namespace TemplateExporter
 			return addinNode.Attributes.GetNamedItem(attr).Value;
 		}
 
-		/// <summary>
-		/// Runs the MD tool.
-		/// </summary>
-		/// <returns><c>true</c>, if MD tool was run, <c>false</c> otherwise.</returns>
-		/// <param name="rootDir">Root dir.</param>
-		/// <param name="arguments">Arguments.</param>
-		private bool RunMDTool(string workingDir, string arguments)
-		{	
-			Log(string.Format("Running mdtool: {0}", arguments));
-			var processStartInfo = new ProcessStartInfo
-			{
-				FileName = "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool",
-				UseShellExecute = false,
-				Arguments = arguments,
-				WorkingDirectory = workingDir,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				RedirectStandardInput = true,
-			};
-
-			var process = Process.Start(processStartInfo);
-			var error = process.StandardError.ReadToEnd ();
-			var output = process.StandardError.ReadToEnd ();
-
-			process.WaitForExit();
-
-			if (process.ExitCode != 0) {
-				Log(string.Format("mdtool EXCEPTION: exitCode: {0}", process.ExitCode));
-				return false;
-			}
-
-			return true;
-		}
-
 		private async Task AddSolutionFile(string path, string content, string solutionFolderName, bool overwriteIfExists = false)
 		{
 			if(CreateFile(path, content, overwriteIfExists))
 			{
-				//var templateFolder = solution.GetAllSolutionItems<SolutionFolder>().FirstOrDefault(x => x.Name == solutionFolderName);
 				var templateFolder = solution.GetAllItems<SolutionFolder>().FirstOrDefault (x => x.Name == solutionFolderName);
 				if (templateFolder == null) {
 					// Create Template solution folder
@@ -454,16 +444,6 @@ namespace TemplateExporter
 			File.WriteAllText (path, content);
 
 			return true;
-		}
-
-		private void Log(string log)
-		{
-			try {
-				progressDialog.WriteText(log + Environment.NewLine);
-				Console.WriteLine (log);
-			} catch (Exception ex) {
-				progressDialog.WriteText("LOG ERROR: {0}" + ex.Message);
-			}
 		}
 	}
 }

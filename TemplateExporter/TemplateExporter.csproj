@@ -34,6 +34,8 @@
     <Compile Include="ExportTemplateCommands.cs" />
     <Compile Include="FinalizeTemplateHandler.cs" />
     <Compile Include="Xml\Xml.cs" />
+    <Compile Include="Helpers\MDTool.cs" />
+    <Compile Include="Helpers\Logging.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Manifest.addin.xml" />
@@ -53,5 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Xml\" />
+    <Folder Include="Helpers\" />
   </ItemGroup>
 </Project>

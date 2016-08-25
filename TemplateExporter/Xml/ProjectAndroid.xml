@@ -1,5 +1,4 @@
-﻿
-		<Project name="${ProjectName}.Droid" directory="./${ProjectName}.Droid" type="[PROJECTTYPE]">
+﻿		<Project name="${ProjectName}[PROJECTNAMEEXTENSION]" directory="./${ProjectName}[PROJECTNAMEEXTENSION]" type="[PROJECTTYPE]">
 			<Options
 				AndroidApplication="true"
 				AndroidResgenFile="Resources/Resource.designer.cs"
