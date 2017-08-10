@@ -14,7 +14,7 @@ namespace TemplateExporter
 	class ExportTemplateHandler:CommandHandler
 	{
 		Solution solution;
-		Project proj;
+		//Project proj;
 		List<SolutionItem> projects;
 		string rootDir;
 		string xptFile;
@@ -81,20 +81,18 @@ namespace TemplateExporter
 					// Set the project name extension so we can have multiple projects of the same type (.iOS, .Android, .Core or whatever is specified in the original project)
 					projectsXml = projectsXml.Replace("[PROJECTNAMEEXTENSION]", project.Name.Replace(projectNameSpace, ""));
 
-					proj = (Project)project;
-					await AddOriginalProjectFile(proj);
-					await AddOriginalSolutionFile(proj);
+					//proj = (Project)project;
+					await AddOriginalProjectFile((Project)project);
+					await AddOriginalSolutionFile((Project)project);
 
-					var files = proj.Files;
-
-					if (!files.Any ())
+					if (!((Project)project).Files.Any ())
 						return;
 					
 					StringBuilder filesXml = new StringBuilder();
 					StringBuilder referencesXml = new StringBuilder();
 					string packagesXml = "";
 
-					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)proj).References) {
+					foreach (var reference in ((MonoDevelop.Projects.DotNetProject)(Project)project).References) {
 						if(reference.ReferenceType != ReferenceType.Assembly)
 							referencesXml.Append(string.Format("<Reference type=\"{0}\" refto=\"{1}\"/>\n\t\t\t\t", reference.ReferenceType.ToString(), reference.Reference.Replace(solution.Name, "${ProjectName}")));							
 					}
@@ -102,7 +100,7 @@ namespace TemplateExporter
 					runtimeXml.Append("<Import file=\"ProjectTemplate.xpt.xml\" />");
 
 					int i = -1;
-					foreach (var file in files) 
+					foreach (var file in ((Project)project).Files) 
 					{
 						if(file.FilePath.ToString().ToLower().EndsWith("packages.config"))
 						{
@@ -129,22 +127,24 @@ namespace TemplateExporter
 						}
 						else
 						{
-							// create new file, so we can replace namespaces and projectname					
+							// create new file, so we can replace namespaces and projectname
 							var content = File.ReadAllText(file.FilePath);
-							content = content.Replace(proj.Name, "${Namespace}");
+							//content = content.Replace(projectNameSpace, "${Namespace}");
+							content = content.Replace(project.Name, "${Namespace}");
 							content = content.Replace(solution.Name, "${SolutionName}");
+
 							CreateFile(templateFilePath, content, true);
 						}
 
 						runtimeXml.Append(string.Format("\n\t\t<Import file=\"{0}\" />", solution.GetRelativeChildPath(file.FilePath)));
-						AppendFile(ref filesXml, file, proj.Name);
+						AppendFile(ref filesXml, file, project.Name);
 					}
 
 					// Replace placeholders
 					projectsXml = projectsXml.Replace("[FILES]", filesXml.ToString());
 					projectsXml = projectsXml.Replace("[PACKAGES]", packagesXml);
 					projectsXml = projectsXml.Replace("[REFERENCES]", referencesXml.ToString());
-					projectsXml = projectsXml.Replace("[DIRECTORY]", proj.Name);
+					projectsXml = projectsXml.Replace("[DIRECTORY]", project.Name);
 					projectsXml = projectsXml.Replace("[TARGETFRAMEWORK]", ((DotNetProject)project).TargetFramework.Id.ToString());
 
 					progressDialog.Progress += progressInterval;
@@ -251,7 +251,7 @@ namespace TemplateExporter
 
 			var projectFileContent = File.ReadAllText(projectFilePath);
 			projectFileContent = projectFileContent.Replace(project.Name, "[PROJECTNAME]");
-			await AddProjectFile (destinationPath, projectFileContent, true);
+			await AddProjectFile (project, destinationPath, projectFileContent, true);
 		}
 
 		private async Task AddOriginalSolutionFile(Project project)
@@ -268,7 +268,7 @@ namespace TemplateExporter
 			var solutionFileContent = File.ReadAllText(solutionFilePath);
 			solutionFileContent = solutionFileContent.Replace(solution.Name, "[SOLUTIONNAME]");
 
-			await AddProjectFile (destinationPath, solutionFileContent, true);
+			await AddProjectFile (project, destinationPath, solutionFileContent, true);
 			isSolutionTemplateCreated = true;
 		}
 
@@ -427,12 +427,12 @@ namespace TemplateExporter
 			}
 		}
 
-		private async Task AddProjectFile(string path, string content, bool overwriteIfExists = false)
+		private async Task AddProjectFile(Project project, string path, string content, bool overwriteIfExists = false)
 		{
 			if(CreateFile(path, content, overwriteIfExists))
 			{		
-				proj.AddFile (path);
-				await proj.SaveAsync(new MonoDevelop.Core.ProgressMonitoring.ConsoleProgressMonitor());
+				project.AddFile (path);
+				await project.SaveAsync(new MonoDevelop.Core.ProgressMonitoring.ConsoleProgressMonitor());
 			}
 		}
 

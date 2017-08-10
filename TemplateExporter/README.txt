@@ -1,7 +1,7 @@
 ﻿To be able to OPEN the TemplateExporter project:
 
-1) Open Xamarin Studio
-2) Xamarin Studio Menu > Add-ins..
+1) Open Visual Studio for Mac
+2) Visual Studio Menu > Add-ins..
 3) Addin Development > Addin maker > Install
 
 
@@ -15,10 +15,10 @@ To BUILD TemplateExporter add-in:
 
 To INSTALL TemplateExporter add-in in Xamarin Studio:
 
-1) In Xamarin Studio menu select: "Add-in Manager..."
+1) In Visual Studio for Mac menu select: "Add-in Manager..."
 2) Click "Install from file..."
 3) navigate to your TemplateExporter.TemplateExporter.mpack file and double click to install
-4) Restart Xamarin Studio
+4) Restart Visual Studio
 
 
 To DEBUG TemplateExporter add-in:
@@ -32,7 +32,8 @@ To DEBUG TemplateExporter add-in:
 
 RELEASE NOTES:
 
-
+0.20:
+Updated for Visual Studio for Mac
 
 0.11:
 Added Xamarin Studio 6 support
